@@ -10,6 +10,7 @@ import (
 func PostSmContextCreate(request models.SMContextCreateData) (int, interface{}) {
 	resp, err := GetSessionManagementSubscription(request)
 	if err == nil && resp.StatusCode == 200 {
+		//defer client.SendPFCPEstablismentrequest()
 		created := models.SMContextCreatedData{
 			PduSessionID: request.PduSessionId,
 			SNssai:       request.SNssai,

@@ -8,6 +8,6 @@ import (
 
 func RouteN1N2Tranfer(r *gin.Engine) {
 	api := r.Group("/namf-comm")
-	api.POST("/v1/ue-contexts/imsi-452040916843227/n1-n2-message", handler.HandleN1N2Tranfer)
+	api.POST("/v1/ue-contexts/imsi-452040916843227/n1-n2-messages", handler.HandleN1N2Tranfer)
 	r.GET("/SendSmContextStatus", handler.GetStatusSmContextCreate)
 }
