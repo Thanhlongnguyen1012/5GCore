@@ -30,7 +30,9 @@ func HandlePDUSessionSmContextCreate(c *gin.Context) {
 			client.SendPFCPEstablismentrequest()
 			log.Println("PFCP Session established successfully")
 			data := models.N1N2MessageTransferReqData{
-				PduSessionId: 1, // <-- Thêm dấu phẩy nếu struct có nhiều trường
+				PduSessionId: request.PduSessionId,
+				SNssai:       request.SNssai,
+				Dnn:          request.Dnn,
 			}
 			time.Sleep(1 * time.Second)
 			client.SendN1N2tranfer(data)

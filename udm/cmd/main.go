@@ -52,9 +52,9 @@ func main() {
 	// start server
 	r := gin.Default()
 
-	r.GET("/nudm-sdm/v2/imsi-452040916843227/sm-data", func(c *gin.Context) {
+	r.GET("/nudm-sdm/v2/imsi-452040989692072/sm-data", func(c *gin.Context) {
 		var data SmContextCreateData
-		db.First(&data, "supi = ? ", "imsi-452040916843227")
+		db.First(&data, "supi = ? ", "imsi-452040989692072")
 		c.JSON(http.StatusOK, &data)
 	})
 
