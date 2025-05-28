@@ -12,7 +12,7 @@ import (
 
 func main() {
 	var wg sync.WaitGroup
-	amfURL := "localhost:8081"
+	amfURL := ":8081"
 	fmt.Println("Start smf")
 	//Khởi chạy server
 	var s server.Server
