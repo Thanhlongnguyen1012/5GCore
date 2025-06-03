@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -45,12 +44,12 @@ func (SmContextCreateData) TableName() string {
 func main() {
 	// connect MySQL
 	//dsn := "root:my-secret-pw@tcp(udm-mysql-core:3306)/udm?charset=utf8mb4&parseTime=True&loc=Local"
-	//dsn := "root:my-secret-pw@tcp(127.0.0.1:3307)/udm?charset=utf8mb4&parseTime=True&loc=Local"
-	dsn := os.Getenv("MYSQL_DSN")
-	if dsn == "" {
-		fmt.Println("MYSQL_DSN environment variable not set")
-		return
-	}
+	dsn := "root:my-secret-pw@tcp(127.0.0.1:3307)/udm?charset=utf8mb4&parseTime=True&loc=Local"
+	// dsn := os.Getenv("MYSQL_DSN")
+	// if dsn == "" {
+	// 	fmt.Println("MYSQL_DSN environment variable not set")
+	// 	return
+	// }
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
