@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: udm
+  namespace: 5gcore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: udm
+  template:
+    metadata:
+      labels:
+        app: udm
+    spec:
+      containers:
+      - name: udm
+        image: thanhlongnguyen1012/5gcore-udm:latest
+        ports:
+        - containerPort: 8082
+        env:
+        - name: MYSQL_DSN
+          value: root:my-secret-pw@tcp(udm-mysql:3306)/udm?charset=utf8mb4&parseTime=True&loc=Local
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: udm
+  namespace: 5gcore
+spec:
+  selector:
+    app: udm
+  ports:
+  - protocol: TCP
+    port: 8082
+    targetPort: 8082
+  type: ClusterIP

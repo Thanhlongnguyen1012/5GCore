@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: udm-mysql
+  namespace: 5gcore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: udm-mysql
+  template:
+    metadata:
+      labels:
+        app: udm-mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0.31
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: my-secret-pw
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        emptyDir: {} 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: udm-mysql
+  namespace: 5gcore
+spec:
+  selector:
+    app: udm-mysql
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP

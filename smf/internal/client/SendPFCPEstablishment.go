@@ -11,7 +11,8 @@ const (
 )
 
 func SendPFCPEstablismentrequest() {
-	remote, err := net.ResolveUDPAddr("udp", "127.0.0.1:8805")
+	var upfBaseURL = os.Getenv("UPF_BASE_URL")
+	remote, err := net.ResolveUDPAddr("udp", upfBaseURL)
 	if err != nil {
 		fmt.Println("ResolveUDPAddr:", err)
 	}

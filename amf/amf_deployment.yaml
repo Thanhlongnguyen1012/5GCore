@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amf
+  namespace: 5gcore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: amf
+  template:
+    metadata:
+      labels:
+        app: amf
+    spec:
+      containers:
+      - name: amf
+        image: thanhlongnguyen1012/5gcore-amf:latest 
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SMF_BASE_URL
+          value: http://smf:8081
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: amf
+  namespace: 5gcore
+spec:
+  selector:
+    app: amf
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP
+

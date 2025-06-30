@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
 
-var smfBaseURL string = "http://localhost:8081"
+// var smfBaseURL string = "http://localhost:8081"
+var smfBaseURL = os.Getenv("SMF_BASE_URL")
 
 func PostSmCreate(data models.SMContextCreateData) (*http.Response, error) {
 	jsonData, err := json.Marshal(data)

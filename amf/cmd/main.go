@@ -22,12 +22,13 @@ var data = models.SMContextCreateData{
 
 func main() {
 	var wg sync.WaitGroup
-	amfBaseURL := "localhost:8080"
+	//amfBaseURL := "127.0.0.1:8080"
+	//amfBaseURL := os.Getenv("AMF_BASE_URL")
 	var s server.Server
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		s.Start(amfBaseURL)
+		s.Start("0.0.0.0:8080")
 	}()
 	wg.Add(1)
 	go func() {

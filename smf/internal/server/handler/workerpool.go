@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"smf/models"
 )
 
 var (
-	MaxWorker = 3
+	MaxWorker = 10
 	MaxQueue  = 20
 )
-var UdmBaseURL string = "http://localhost:8082"
+
+// var UdmBaseURL string = "http://localhost:8082"
+var UdmBaseURL = os.Getenv("UDM_BASE_URL")
 
 type Payload models.SMContextCreateData
 

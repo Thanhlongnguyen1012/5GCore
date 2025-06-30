@@ -12,7 +12,8 @@ const (
 )
 
 func main() {
-	addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:8805")
+	//upfURL := os.Getenv("UPF_BASE_URL")
+	addr, err := net.ResolveUDPAddr("udp", "0.0.0.0:8805")
 	if err != nil {
 		fmt.Println("ResolveUDPAddr:", err)
 	}
