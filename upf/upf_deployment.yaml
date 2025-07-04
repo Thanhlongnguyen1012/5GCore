@@ -32,7 +32,7 @@ spec:
   selector:
     app: upf
   ports:
-  - protocol: TCP
+  - protocol: UDP
     port: 8805
     targetPort: 8805
   type: ClusterIP

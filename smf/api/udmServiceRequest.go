@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	metric "smf/internal/server/metrics"
 	"smf/models"
+	"strconv"
 )
 
 // var UdmBaseURL string = "http://localhost:8082"
@@ -18,5 +20,7 @@ func GetSessionManagementSubscription(data models.SMContextCreateData) (*http.Re
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	response, err := client.Do(req)
+	// Instrumentation: tăng counter cho response từ UDM
+	metric.HttpRequestsTotal.WithLabelValues(req.Method, req.URL.Path, strconv.Itoa(response.StatusCode)).Inc()
 	return response, err
 }

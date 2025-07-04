@@ -5,12 +5,15 @@ import (
 	"log"
 	"net/http"
 	"smf/internal/client"
+	metric "smf/internal/server/metrics"
 	"smf/models"
 
 	"github.com/gin-gonic/gin"
 )
 
 func HandlePDUSessionSmContextCreate(c *gin.Context) {
+	//ghi nhận metric đến từ amf
+	metric.SMCreateRequestsTotal.Inc()
 	var request models.SMContextCreateData
 	err := c.ShouldBindJSON(&request)
 	if err != nil {

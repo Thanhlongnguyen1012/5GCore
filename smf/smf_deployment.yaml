@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: smf
-        image: thanhlongnguyen1012/5gcore-smf:latest
+        image: thanhlongnguyen1012/smf:v2
         ports:
         - containerPort: 8081
         env:

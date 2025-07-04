@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	metric "smf/internal/server/metrics"
 	"smf/models"
+	"strconv"
 )
 
 // var amfBaseURL string = "http://localhost:8080"
@@ -24,5 +26,10 @@ func PostN1N2Tranfer(request models.N1N2MessageTransferReqData) (*http.Response,
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
+	//tăng giá trị mỗi khi gửi n1n2
+	metric.N1N2RequestsTotal.Inc()
+	metric.HttpRequestsTotal.
+		WithLabelValues(req.Method, req.URL.Path, strconv.Itoa(resp.StatusCode)).
+		Inc()
 	return resp, err
 }
