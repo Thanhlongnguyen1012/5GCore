@@ -57,7 +57,7 @@ func main() {
 		fmt.Println("Failed to connect to database: ", err)
 		return
 	}
-	// start server
+	// Start server
 	r := gin.Default()
 
 	r.GET("/nudm-sdm/v2/imsi-452040989692072/sm-data", func(c *gin.Context) {
@@ -66,5 +66,9 @@ func main() {
 		c.JSON(http.StatusOK, &data)
 	})
 	//udmUrl := os.Getenv("UDM_URL")
-	r.Run("0.0.0.0:8082")
+	//r.Run("0.0.0.0:8082")
+	error := r.RunTLS(":8082", "cert.pem", "key.pem")
+	if error != nil {
+		fmt.Println("Failed to run TLS Server ")
+	}
 }

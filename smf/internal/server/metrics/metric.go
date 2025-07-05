@@ -9,7 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// Biến metric Prometheus
+// metrics var
 var (
 	HttpRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -20,7 +20,7 @@ var (
 	)
 )
 var (
-	// Đếm số SMCreateContext (AMF → SMF)
+	// metrics SMCreateContext (AMF → SMF)
 	SMCreateRequestsTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "smf_smcreate_requests_total",
@@ -28,7 +28,7 @@ var (
 		},
 	)
 
-	// Đếm số N1N2 transfers (SMF → AMF)
+	// metrics N1N2 transfers (SMF → AMF)
 	N1N2RequestsTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "smf_n1n2_requests_total",
@@ -48,10 +48,10 @@ func PrometheusMiddleware() gin.HandlerFunc {
 
 		status := strconv.Itoa(c.Writer.Status())
 		method := c.Request.Method
-		path := c.FullPath() // sử dụng FullPath() để tránh phân mảnh bởi ID động
+		path := c.FullPath()
 
 		if path == "" {
-			path = c.Request.URL.Path // fallback nếu route không khớp
+			path = c.Request.URL.Path
 		}
 
 		HttpRequestsTotal.WithLabelValues(method, path, status).Inc()

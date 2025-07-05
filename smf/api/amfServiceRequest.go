@@ -2,6 +2,8 @@ package api
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -24,9 +26,26 @@ func PostN1N2Tranfer(request models.N1N2MessageTransferReqData) (*http.Response,
 	if err != nil {
 		fmt.Println("send post error")
 	}
-	client := &http.Client{}
+	//verify by TLS
+	caCert, err := os.ReadFile("cert.pem")
+	if err != nil {
+		fmt.Println("Failed to read cert.pem ")
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Create reusable HTTP client
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs: caCertPool,
+		},
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90,
+	}
+	client := &http.Client{Transport: transport}
 	resp, err := client.Do(req)
-	//tăng giá trị mỗi khi gửi n1n2
+	//metrics for n1n2
 	metric.N1N2RequestsTotal.Inc()
 	metric.HttpRequestsTotal.
 		WithLabelValues(req.Method, req.URL.Path, strconv.Itoa(resp.StatusCode)).

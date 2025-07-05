@@ -14,7 +14,7 @@ type Server struct {
 func (s Server) Start(url string) {
 	s.r = gin.Default()
 	resource.RouteN1N2Tranfer(s.r)
-	err := s.r.Run(url)
+	err := s.r.RunTLS(url, "cert.pem", "key.pem")
 	if err != nil {
 		fmt.Println("AMF start error")
 	}

@@ -25,15 +25,19 @@ func main() {
 	//amfBaseURL := "127.0.0.1:8080"
 	//amfBaseURL := os.Getenv("AMF_BASE_URL")
 	var s server.Server
+	//start server
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		s.Start("0.0.0.0:8080")
 	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		client.SendSmContextCreate(data)
-	}()
+	//send createSmContext
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			client.SendSmContextCreate(data)
+		}()
+	}
 	wg.Wait()
 }

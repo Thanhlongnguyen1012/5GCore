@@ -18,18 +18,18 @@ type Server struct {
 }
 
 func (s Server) Start(url string) {
-	// Khởi tạo JobQueue, Dispatcher cho worker pool
+	// Start JobQueue, Dispatcher for worker pool
 	handler.JobQueue = make(chan handler.Job, handler.MaxQueue)
 	dispatcher := handler.NewDispatcher(handler.MaxWorker)
 	dispatcher.Run()
 	log.Println("Worker pool dispatcher started")
-	// Khởi tạo Prometheus metrics
+	// Start Prometheus metrics
 	prometheus.MustRegister(metric.HttpRequestsTotal)
-	//khởi tạo server
+	// Start server
 	s.r = gin.Default()
 	s.r.Use(metric.PrometheusMiddleware())
 	resource.RouteSmContextCreate(s.r)
-	err := s.r.Run(url)
+	err := s.r.RunTLS(url, "cert.pem", "key.pem")
 	if err != nil {
 		fmt.Println("smf start error")
 	}

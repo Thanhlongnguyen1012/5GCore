@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,7 +27,24 @@ func (p *Payload) GetSessionManagementSubscription() (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
+	//verify by TLS
+	caCert, err := os.ReadFile("cert.pem")
+	if err != nil {
+		fmt.Println("Failed to read cert.pem ")
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Create reusable HTTP client
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs: caCertPool,
+		},
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90,
+	}
+	client := &http.Client{Transport: transport}
 	response, err := client.Do(req)
 	return response, err
 }

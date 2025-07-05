@@ -12,7 +12,7 @@ import (
 )
 
 func HandlePDUSessionSmContextCreate(c *gin.Context) {
-	//ghi nhận metric đến từ amf
+	//metrics for post createSmContext
 	metric.SMCreateRequestsTotal.Inc()
 	var request models.SMContextCreateData
 	err := c.ShouldBindJSON(&request)
@@ -20,8 +20,7 @@ func HandlePDUSessionSmContextCreate(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
-
-	// Tạo Job với response channel
+	// Create Job with response channel
 	responseChan := make(chan JobResult)
 	job := Job{
 		Payload:      Payload(request),
@@ -29,7 +28,7 @@ func HandlePDUSessionSmContextCreate(c *gin.Context) {
 	}
 	JobQueue <- job
 
-	// Chờ kết quả từ worker
+	//  Waiting for result from worker
 	result := <-responseChan
 
 	if result.Error != nil {
