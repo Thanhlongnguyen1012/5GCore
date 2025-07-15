@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"smf/api"
 	"smf/internal/server/handler"
 	"smf/internal/server/resource"
 	"time"
@@ -22,9 +21,9 @@ func (s Server) Start(url string) {
 	handler.JobQueue = make(chan handler.Job, handler.MaxQueue)
 	dispatcher := handler.NewDispatcher(handler.MaxWorker)
 	dispatcher.Run()
-	api.JobQueue = make(chan api.Job, api.MaxQueue)
-	dispatcher2 := api.NewDispatcher(api.MaxWorker)
-	dispatcher2.Run()
+	// api.JobQueue = make(chan api.Job, api.MaxQueue)
+	// dispatcher2 := api.NewDispatcher(api.MaxWorker)
+	// dispatcher2.Run()
 	//log.Println("Worker pool dispatcher started")
 	// Start Prometheus metrics
 	//prometheus.MustRegister(metric.HttpRequestsTotal)

@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"smf/api"
+	"smf/internal/client"
 	"smf/models"
 )
 
@@ -24,52 +22,28 @@ var (
 
 type Payload models.SMContextCreateData
 
-func (p *Payload) GetSessionManagementSubscription() (*http.Response, error) {
-	api.InitOnce.Do(api.InitHttpClient)
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/nudm-sdm/v2/%s/sm-data", UdmBaseURL, p.Supi), nil)
+func (p *Payload) PduSessionEstablishment() (*http.Response, error) {
+	resp, err := api.GetSessionManagementSubscription(request)
 	if err != nil {
+		fmt.Println("Failed to send udm")
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
-	//verify by TLS
-	// caCert, err := os.ReadFile("cert.pem")
-	// if err != nil {
-	// 	fmt.Println("Failed to read cert.pem ")
-	// }
-	// caCertPool := x509.NewCertPool()
-	// caCertPool.AppendCertsFromPEM(caCert)
-
-	// // Create reusable HTTP client
-	// transport := &http.Transport{
-	// 	TLSClientConfig: &tls.Config{
-	// 		RootCAs: caCertPool,
-	// 	},
-	// 	MaxIdleConns:        100,
-	// 	MaxIdleConnsPerHost: 100,
-	// 	IdleConnTimeout:     90,
-	// }
-	// client := &http.Client{Transport: transport}
-	response, err := api.Client.Do(req)
-	return response, err
-}
-func (p *Payload) SendN1N2tranfer(data models.N1N2MessageTransferReqData) (*http.Response, error) {
-	api.InitOnce.Do(api.InitHttpClient)
-	jsonData, err := json.Marshal(&data)
-	if err != nil {
-		fmt.Println("marshal JSON error")
-	}
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/namf-comm/v1/ue-contexts/imsi-452040989692072/n1-n2-messages", amfBaseURL), bytes.NewBuffer(jsonData))
-	req.Header.Set("Content-Type", "application/json")
-	if err != nil {
-		fmt.Println("send post error")
-	}
-
-	resp, err := api.Client.Do(req)
-	//metrics for n1n2
-	//metric.N1N2RequestsTotal.Inc()
-	if err != nil {
-		fmt.Println("http request n1n2 failed ")
-		return nil, err
+	if resp.StatusCode == 200 && resp.Body != nil {
+		err := client.SendPFCPEstablismentrequest()
+		if err != nil {
+			fmt.Println("Failed to send UPF")
+			return nil, err
+		}
+		data := models.N1N2MessageTransferReqData{
+			PduSessionId: request.PduSessionId,
+			SNssai:       request.SNssai,
+			Dnn:          request.Dnn,
+		}
+		err = client.SendN1N2tranfer(data)
+		if err != nil {
+			fmt.Println("Failed to send AMF")
+		}
+		fmt.Println("Send n1n2 ok !")
 	}
 	return resp, err
 }
@@ -111,7 +85,7 @@ func (w Worker) Start() {
 
 			select {
 			case job := <-w.JobChannel:
-				resp, err := job.Payload.GetSessionManagementSubscription()
+				resp, err := job.Payload.PduSessionEstablishment()
 				if err != nil {
 					job.ResponseChan <- JobResult{
 						Status: http.StatusInternalServerError,
@@ -119,17 +93,10 @@ func (w Worker) Start() {
 					}
 					continue
 				}
-				defer resp.Body.Close()
-
-				var result any
-				body, err := io.ReadAll(resp.Body)
-				if err == nil {
-					json.Unmarshal(body, &result)
-				}
 
 				job.ResponseChan <- JobResult{
 					Status:   resp.StatusCode,
-					Response: result,
+					Response: nil,
 				}
 
 			case <-w.quit:
