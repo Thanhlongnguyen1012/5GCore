@@ -7,8 +7,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -42,33 +45,65 @@ func (s *Snssai) Scan(value interface{}) error {
 func (SmContextCreateData) TableName() string {
 	return "udm"
 }
+
+var (
+	dsn = os.Getenv("MYSQL_DSN")
+	db  *gorm.DB
+)
+
 func main() {
 	// connect MySQL
 	//dsn := "root:my-secret-pw@tcp(udm-mysql-core:3306)/udm?charset=utf8mb4&parseTime=True&loc=Local"
 	//dsn := "root:my-secret-pw@tcp(127.0.0.1:3307)/udm?charset=utf8mb4&parseTime=True&loc=Local"
-	dsn := os.Getenv("MYSQL_DSN")
-	if dsn == "" {
-		fmt.Println("MYSQL_DSN environment variable not set")
-		return
-	}
-
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	// dsn := os.Getenv("MYSQL_DSN")
+	// if dsn == "" {
+	// 	fmt.Println("MYSQL_DSN environment variable not set")
+	// 	return
+	// }
+	var err error
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println("Failed to connect to database: ", err)
 		return
 	}
+	sqlDB, _ := db.DB()
+	sqlDB.SetMaxOpenConns(512)
+	sqlDB.SetMaxIdleConns(512)
+	sqlDB.SetConnMaxLifetime(10 * time.Minute)
 	// Start server
-	r := gin.Default()
+	//r := gin.Default()
+	r := gin.New()
 
-	r.GET("/nudm-sdm/v2/imsi-452040989692072/sm-data", func(c *gin.Context) {
+	// r.GET("/nudm-sdm/v2/imsi-452040989692072/sm-data", func(c *gin.Context) {
+	// 	var data SmContextCreateData
+	// 	db.First(&data, "supi = ? ", "imsi-452040989692072")
+	// 	c.JSON(http.StatusOK, &data)
+	// })
+	/*r.Use(func(c *gin.Context) {
+		fmt.Println("Protocol:", c.Request.Proto) // <-- In ra HTTP/1.1 hoặc HTTP/2.0
+		c.Next()
+	})*/
+	r.GET("/nudm-sdm/v2/imsi-452040989692072/sm-data", handlerSQL(db))
+	//udmUrl := os.Getenv("UDM_URL")
+	//r.Run("0.0.0.0:8082")
+	h2s := &http2.Server{
+		MaxConcurrentStreams: 750,
+		IdleTimeout:          30 * time.Second,
+	}
+	server := &http.Server{
+		Addr:    ":8082",
+		Handler: h2c.NewHandler(r, h2s),
+	}
+	error := server.ListenAndServe()
+	//error := r.RunTLS(":8082", "cert.pem", "key.pem")
+	if error != nil {
+		fmt.Println("Failed to run TLS Server ")
+	}
+}
+func handlerSQL(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		var data SmContextCreateData
 		db.First(&data, "supi = ? ", "imsi-452040989692072")
 		c.JSON(http.StatusOK, &data)
-	})
-	//udmUrl := os.Getenv("UDM_URL")
-	//r.Run("0.0.0.0:8082")
-	error := r.RunTLS(":8082", "cert.pem", "key.pem")
-	if error != nil {
-		fmt.Println("Failed to run TLS Server ")
 	}
 }

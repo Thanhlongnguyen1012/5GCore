@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"log"
 )
 
 type Dispatcher struct {
@@ -31,7 +30,7 @@ func (d *Dispatcher) dispatch() {
 	for {
 		select {
 		case job := <-JobQueue:
-			log.Printf("a dispatcher request received")
+			//log.Printf("a dispatcher request received")
 			// a job request has been received
 			go func(job Job) {
 				// try to obtain a worker job channel that is available.

@@ -10,7 +10,7 @@ const (
 	SessionEstablishmentReq = 0x32
 )
 
-func SendPFCPEstablismentrequest() {
+func SendPFCPEstablismentrequest() error {
 	var upfBaseURL = os.Getenv("UPF_BASE_URL")
 	remote, err := net.ResolveUDPAddr("udp", upfBaseURL)
 	if err != nil {
@@ -27,16 +27,19 @@ func SendPFCPEstablismentrequest() {
 	if err != nil {
 		fmt.Println("Write:", err)
 	}
-	fmt.Printf("Sent PFCP Session Establishment Request (%d bytes)\n", len(req))
+	//fmt.Printf("Sent PFCP Session Establishment Request (%d bytes)\n", len(req))
 
 	buf := make([]byte, 65535)
-	n, _, err := conn.ReadFromUDP(buf)
+	//n, _, err := conn.ReadFromUDP(buf)
+	_, _, err = conn.ReadFromUDP(buf)
+
 	if err != nil {
 		fmt.Println("ReadFromUDP:", err)
 		os.Exit(1)
 	}
-	fmt.Printf("Received PFCP Response (%d bytes)\n", n)
-	fmt.Printf("% x\n", buf[:n])
+	//fmt.Printf("Received PFCP Response (%d bytes)\n", n)
+	//fmt.Printf("% x\n", buf[:n])
+	return err
 }
 
 func buildPFCPRequest() []byte {

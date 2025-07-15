@@ -9,8 +9,8 @@ services:
     restart: unless-stopped
     ports:
       - "8082:8082"
-    cpus: "1.0"
-    mem_limit: "256m"
+    #cpus: "1.0"
+    #mem_limit: "256m"
     networks:
       - core-net
     environment:
@@ -29,8 +29,8 @@ services:
     networks: 
       - core-net
     environment:
-      - AMF_BASE_URL=http://amf:8080
-      - UDM_BASE_URL=http://udm:8082
+      - AMF_BASE_URL=https://amf:8080
+      - UDM_BASE_URL=https://udm:8082
       - UPF_BASE_URL=upf:8805   
   upf:
     build:
@@ -53,12 +53,12 @@ services:
     restart: no #unless-stopped
     ports:
       - "8080:8080"
-    cpus: "1.0"
-    mem_limit: "256m"
+    #cpus: "1.0"
+    #mem_limit: "256m"
     networks:
       - core-net
     environment:
-      - SMF_BASE_URL=http://smf:8081  
+      - SMF_BASE_URL=https://smf:8081  
 networks:
   core-net:
     driver: bridge
