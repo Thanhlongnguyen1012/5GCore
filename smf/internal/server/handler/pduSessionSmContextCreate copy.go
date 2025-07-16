@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"smf/models"
 
@@ -33,7 +32,7 @@ func HandlePDUSessionSmContextCreate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
 	}
-	if result.Error == nil && result.Status == 200 {
+	if result.Status == 200 {
 		//defer client.SendPFCPEstablismentrequest()
 		created := models.SMContextCreatedData{
 			PduSessionID: request.PduSessionId,
@@ -41,6 +40,8 @@ func HandlePDUSessionSmContextCreate(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusCreated, created)
+		//} else {
+		//fmt.Println("Failed to create SM Context")
 
 		//if result.Status == http.StatusCreated {
 		// Run PFCP request in goroutine
@@ -58,7 +59,8 @@ func HandlePDUSessionSmContextCreate(c *gin.Context) {
 		// } else {
 		// 	fmt.Println("pfcp Session establishment failed")
 		// }
-	} else {
-		fmt.Println("Failed to create SM Context")
+		// } else {
+		// 	fmt.Println("Failed to create SM Context")
+		// }
 	}
 }

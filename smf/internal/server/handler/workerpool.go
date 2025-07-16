@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	MaxWorker = 128
-	MaxQueue  = 128
+	MaxWorker = 1536
+	MaxQueue  = 4096
 )
 
 // var UdmBaseURL string = "http://localhost:8082"
@@ -24,28 +24,32 @@ type Payload models.SMContextCreateData
 
 func (p *Payload) PduSessionEstablishment() (*http.Response, error) {
 	resp, err := api.GetSessionManagementSubscription(request)
+
 	if err != nil {
 		fmt.Println("Failed to send udm")
 		return nil, err
 	}
+
 	if resp.StatusCode == 200 && resp.Body != nil {
-		err := client.SendPFCPEstablismentrequest()
-		if err != nil {
+		client.SendPFCPEstablismentrequest()
+		/*if err != nil {
 			fmt.Println("Failed to send UPF")
-			return nil, err
-		}
+			return nil
+		}*/
+
 		data := models.N1N2MessageTransferReqData{
 			PduSessionId: request.PduSessionId,
 			SNssai:       request.SNssai,
 			Dnn:          request.Dnn,
 		}
-		err = client.SendN1N2tranfer(data)
+		err := client.SendN1N2tranfer(data)
 		if err != nil {
 			fmt.Println("Failed to send AMF")
 		}
-		fmt.Println("Send n1n2 ok !")
+		//fmt.Println("Send n1n2 ok !")
+		//}
 	}
-	return resp, err
+	return resp, nil
 }
 
 // Job represents the job to be run

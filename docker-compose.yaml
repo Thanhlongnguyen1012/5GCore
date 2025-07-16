@@ -9,12 +9,13 @@ services:
     restart: unless-stopped
     ports:
       - "8082:8082"
-    #cpus: "1.0"
+    cpuset: "4"
     #mem_limit: "256m"
     networks:
-      - core-net
+      core-net:
+        ipv4_address: 172.20.0.10
     environment:
-      - MYSQL_DSN=root:my-secret-pw@tcp(udm-mysql:3306)/udm?charset=utf8mb4&parseTime=True&loc=Local
+      - MYSQL_DSN=root:my-secret-pw@tcp(172.20.0.3:3306)/udm?charset=utf8mb4&parseTime=True&loc=Local
 
   smf:
     build:
@@ -24,13 +25,14 @@ services:
     restart: no #unless-stopped
     ports:
       - "8081:8081"
-    cpus: "1.0"
+    cpuset: "1"
     mem_limit: "256m"
     networks: 
-      - core-net
+      core-net:
+        ipv4_address: 172.20.0.11
     environment:
-      - AMF_BASE_URL=https://amf:8080
-      - UDM_BASE_URL=https://udm:8082
+      - AMF_BASE_URL=https://172.20.0.12:8080
+      - UDM_BASE_URL=https://172.20.0.10:8082
       - UPF_BASE_URL=upf:8805   
   upf:
     build:
@@ -40,7 +42,7 @@ services:
     restart: unless-stopped
     ports:
       - "8805:8805"
-    cpus: "1.0"
+    cpuset: "2"
     mem_limit: "256m"
     networks: 
       - core-net
@@ -50,15 +52,20 @@ services:
       context: ./amf
       dockerfile: Dockerfile
     container_name: amf
+    profiles:
+      - 'manual'
     restart: no #unless-stopped
     ports:
       - "8080:8080"
-    #cpus: "1.0"
+    cpuset: "3"
     #mem_limit: "256m"
+    depends_on:
+      - smf
     networks:
-      - core-net
+      core-net:
+        ipv4_address: 172.20.0.12
     environment:
-      - SMF_BASE_URL=https://smf:8081  
+      - SMF_BASE_URL=https://172.20.0.11:8081  
 networks:
   core-net:
     driver: bridge

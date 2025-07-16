@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"gorm.io/gorm/logger"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/http2"
@@ -61,19 +64,28 @@ func main() {
 	// 	return
 	// }
 	var err error
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				SlowThreshold: time.Millisecond * 200,
+				LogLevel:      logger.Info,
+				Colorful:      true,
+			},
+		),
+	})
 	if err != nil {
 		fmt.Println("Failed to connect to database: ", err)
 		return
 	}
 	sqlDB, _ := db.DB()
-	sqlDB.SetMaxOpenConns(512)
-	sqlDB.SetMaxIdleConns(512)
+	sqlDB.SetMaxOpenConns(32)
+	sqlDB.SetMaxIdleConns(32)
 	sqlDB.SetConnMaxLifetime(10 * time.Minute)
 	// Start server
 	//r := gin.Default()
-	r := gin.New()
-
+	//r := gin.New()
+	r := gin.Default()
 	// r.GET("/nudm-sdm/v2/imsi-452040989692072/sm-data", func(c *gin.Context) {
 	// 	var data SmContextCreateData
 	// 	db.First(&data, "supi = ? ", "imsi-452040989692072")
@@ -86,10 +98,7 @@ func main() {
 	r.GET("/nudm-sdm/v2/imsi-452040989692072/sm-data", handlerSQL(db))
 	//udmUrl := os.Getenv("UDM_URL")
 	//r.Run("0.0.0.0:8082")
-	h2s := &http2.Server{
-		MaxConcurrentStreams: 750,
-		IdleTimeout:          30 * time.Second,
-	}
+	h2s := &http2.Server{}
 	server := &http.Server{
 		Addr:    ":8082",
 		Handler: h2c.NewHandler(r, h2s),
@@ -103,7 +112,8 @@ func main() {
 func handlerSQL(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var data SmContextCreateData
-		db.First(&data, "supi = ? ", "imsi-452040989692072")
+		db.Raw("SELECT * FROM udm WHERE supi = ?", "imsi-452040989692072").Scan(&data)
+		//db.First(&data, "supi = ? ", "imsi-452040989692072")
 		c.JSON(http.StatusOK, &data)
 	}
 }

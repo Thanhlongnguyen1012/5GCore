@@ -23,9 +23,10 @@ var data = models.SMContextCreateData{
 	ServingNfId: "2ab2b5a9-68e8-4ee6-b939-024c109b520c",
 	AnType:      "3GPP_ACCESS",
 }
+var Wg sync.WaitGroup
 
 func main() {
-	var wg sync.WaitGroup
+	//var wg sync.WaitGroup
 	// request/s
 	//const sendRate = 2000
 	//duration ticker
@@ -33,6 +34,7 @@ func main() {
 	//var tickNum int = int(time.Second) / int(durationTicker)
 	done := time.After(60 * time.Second)
 	ticker := time.NewTicker(durationTicker)
+	//Rticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	//amfBaseURL := "127.0.0.1:8080"
 	//amfBaseURL := os.Getenv("AMF_BASE_URL")
@@ -44,23 +46,27 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
-			for i := 0; i < 100; i++ {
-				wg.Add(1)
+			for i := 0; i < 200; i++ {
+				Wg.Add(1)
 				go func() {
+					defer Wg.Done()
 					//defer wg.Done()
-					defer func() {
+					/*defer func() {
 						if r := recover(); r != nil {
 							log.Println("panic in goroutine:", r)
 						}
 						wg.Done()
 					}()
+					*/
 					client.SendSmContextCreate(data)
 				}()
 			}
+		//case <-Rticker.C:
+		//log.Printf("send: %d, receive: %d", atomic.SwapUint64(&api.SmContextCount, 0), atomic.SwapUint64(&api.N1n2Count, 0))
 		case <-done:
 			log.Println("create channel done")
 			time.Sleep(30 * time.Second)
-			wg.Wait()
+			Wg.Wait()
 			log.Println("tổng số request gửi đi trong 1s:", atomic.LoadUint64(&api.SmContextCount))
 			log.Println("tổng số request thành công trong 1s:", atomic.LoadUint64(&api.N1n2Count))
 			return
